@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 5500; // Use process.env.PORT if available, otherwise default to 3000
+const PORT = process.env.PORT || 3000; // Use process.env.PORT if available, otherwise default to 3000
 
 // Middleware
 app.use(cors()); // Enable CORS for all routes
