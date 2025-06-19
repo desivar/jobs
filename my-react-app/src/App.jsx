@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 const App = () => {
   // State for mock user login
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(''); // Stores the username from input
 
   // State for fetched data
   const [users, setUsers] = useState([]);
@@ -25,32 +25,33 @@ const App = () => {
   const [errorPipelines, setErrorPipelines] = useState(null);
 
   // Base URL for your backend API.
-  // IMPORTANT: This is now hardcoded to http://localhost:5500/api.
+  // IMPORTANT: This is hardcoded to http://localhost:5500/api.
   // Your Node.js backend MUST be running on port 5500 for this to work.
   const API_BASE_URL = 'http://localhost:5500/api'; 
 
   // --- Debugging Log: Check isLoggedIn state on every render ---
-  // Open your browser's developer console (F12) to see these logs.
+  // Open your browser's developer console (F12, then Console tab) to see these logs.
   console.log('App component rendered. Current isLoggedIn state:', isLoggedIn);
 
   // Mock login function
   const handleLogin = (e) => {
-    e.preventDefault();
-    if (username.trim()) {
-      setIsLoggedIn(true);
+    e.preventDefault(); // Prevent default form submission behavior (page reload)
+    if (username.trim()) { // Check if username input is not empty
+      setIsLoggedIn(true); // Set login state to true
       console.log(`User '${username}' logged in (mock).`);
       // --- Debugging Log: Confirm state change immediately after setting ---
       console.log('isLoggedIn set to TRUE. Next render should show dashboard.'); 
     } else {
       console.log('Login failed: Please enter a username.'); 
-      // For a proper UI, you'd show an error message in the app, not just console.log.
+      // For a proper UI, you would show an error message directly in the application's UI
+      // (e.g., using a state variable for an error message that renders on screen).
     }
   };
 
   // Mock logout function
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUsername('');
+    setIsLoggedIn(false); // Set login state to false
+    setUsername(''); // Clear the username
     // Clear fetched data on logout to reset the view
     setUsers([]);
     setCustomers([]);
@@ -59,45 +60,46 @@ const App = () => {
     console.log('User logged out (mock).');
   };
 
-  // Function to fetch data from the backend
+  // Function to fetch data from the backend API
   const fetchData = async (endpoint, setData, setLoading, setError) => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); // Set loading state to true
+    setError(null); // Clear any previous errors
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`);
-      if (!response.ok) {
-        // Provide more detailed error if backend sends non-200 status
+      const response = await fetch(`${API_BASE_URL}${endpoint}`); // Make API request
+      if (!response.ok) { // Check if the HTTP response was successful (status 200-299)
+        // Throw an error with more details if the request failed
         throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText || 'Unknown Error'}`);
       }
-      const data = await response.json();
-      setData(data);
+      const data = await response.json(); // Parse the JSON response
+      setData(data); // Update the state with the fetched data
     } catch (error) {
-      console.error(`Error fetching data from ${endpoint}:`, error);
-      setError(`Failed to load data from ${endpoint}: ${error.message}. Ensure your backend is running and accessible at ${API_BASE_URL.split('/api')[0]}.`);
+      console.error(`Error fetching data from ${endpoint}:`, error); // Log the error to console
+      // Set an error message to display in the UI
+      setError(`Failed to load data from ${endpoint}: ${error.message}. Please ensure your backend is running and accessible at ${API_BASE_URL.split('/api')[0]}.`);
     } finally {
-      setLoading(false);
+      setLoading(false); // Set loading state back to false
     }
   };
 
-  // Effect to fetch data when the user logs in
+  // useEffect hook to trigger data fetching when isLoggedIn state changes to true
   useEffect(() => {
     // --- Debugging Log: Check isLoggedIn inside useEffect ---
     console.log('useEffect triggered. isLoggedIn:', isLoggedIn);
-    if (isLoggedIn) {
+    if (isLoggedIn) { // Only fetch data if the user is logged in
       console.log('isLoggedIn is TRUE, attempting to fetch dashboard data...');
       fetchData('/users', setUsers, setLoadingUsers, setErrorUsers);
       fetchData('/customers', setCustomers, setLoadingCustomers, setErrorCustomers);
       fetchData('/jobs', setJobs, setLoadingJobs, setErrorJobs);
       fetchData('/pipelines', setPipelines, setLoadingPipelines, setErrorPipelines);
     }
-  }, [isLoggedIn]); // This effect runs only when isLoggedIn state changes
+  }, [isLoggedIn]); // Dependency array: this effect runs whenever isLoggedIn changes
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-8 font-inter text-gray-800">
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
-      {/* Header */}
+      {/* Header section */}
       <header className="mb-10 text-center">
         <h1 className="text-5xl font-extrabold text-indigo-800 drop-shadow-lg animate-fade-in-down">
           Frontend Data Dashboard
@@ -110,11 +112,11 @@ const App = () => {
       {/* Login/User Display Section */}
       <section className="bg-white p-8 rounded-2xl shadow-xl mb-10 max-w-2xl mx-auto border border-gray-200">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">User Management</h2>
-        {/* Conditional rendering: show welcome/logout if logged in, else show login form */}
         {isLoggedIn ? (
+          // Display welcome message and logout button if logged in
           <div className="flex flex-col items-center">
             <p className="text-xl mb-4 text-green-600">
-              Welcome back, <span className="font-semibold">{username}</span>!
+              Welcome back, <span className="font-semibold">{username}</span>! You are logged in.
             </p>
             <button
               onClick={handleLogout}
@@ -124,6 +126,7 @@ const App = () => {
             </button>
           </div>
         ) : (
+          // Display login form if not logged in
           <form onSubmit={handleLogin} className="flex flex-col items-center">
             <input
               type="text"
@@ -131,6 +134,7 @@ const App = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full max-w-sm p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-indigo-400 outline-none transition duration-200"
+              required // Make the username field required
             />
             <button
               type="submit"
@@ -143,8 +147,9 @@ const App = () => {
       </section>
 
       {/* Data Display Sections - ONLY RENDERED IF isLoggedIn IS TRUE */}
-      {isLoggedIn && ( // This condition controls whether the entire dashboard content is visible
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+      {/* The `key` attribute here helps React re-render this section correctly when isLoggedIn changes */}
+      {isLoggedIn && ( 
+        <div key="dashboard-sections" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
           {/* Users Section */}
           <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Users</h2>
@@ -155,7 +160,8 @@ const App = () => {
             )}
             <div className="grid grid-cols-1 gap-4">
               {users.map((user, index) => (
-                <div key={index} className="bg-indigo-50 p-4 rounded-xl shadow-md border border-indigo-200">
+                // Using user._id for key if available, otherwise index (less ideal but functional)
+                <div key={user._id || index} className="bg-indigo-50 p-4 rounded-xl shadow-md border border-indigo-200">
                   <pre className="text-sm text-gray-700 whitespace-pre-wrap">
                     {JSON.stringify(user, null, 2)}
                   </pre>
@@ -174,7 +180,7 @@ const App = () => {
             )}
             <div className="grid grid-cols-1 gap-4">
               {customers.map((customer, index) => (
-                <div key={index} className="bg-purple-50 p-4 rounded-xl shadow-md border border-purple-200">
+                <div key={customer._id || index} className="bg-purple-50 p-4 rounded-xl shadow-md border border-purple-200">
                   <pre className="text-sm text-gray-700 whitespace-pre-wrap">
                     {JSON.stringify(customer, null, 2)}
                   </pre>
@@ -193,7 +199,7 @@ const App = () => {
             )}
             <div className="grid grid-cols-1 gap-4">
               {jobs.map((job, index) => (
-                <div key={index} className="bg-blue-50 p-4 rounded-xl shadow-md border border-blue-200">
+                <div key={job._id || index} className="bg-blue-50 p-4 rounded-xl shadow-md border border-blue-200">
                   <pre className="text-sm text-gray-700 whitespace-pre-wrap">
                     {JSON.stringify(job, null, 2)}
                   </pre>
@@ -212,7 +218,7 @@ const App = () => {
             )}
             <div className="grid grid-cols-1 gap-4">
               {pipelines.map((pipeline, index) => (
-                <div key={index} className="bg-green-50 p-4 rounded-xl shadow-md border border-green-200">
+                <div key={pipeline._id || index} className="bg-green-50 p-4 rounded-xl shadow-md border border-green-200">
                   <pre className="text-sm text-gray-700 whitespace-pre-wrap">
                     {JSON.stringify(pipeline, null, 2)}
                   </pre>
