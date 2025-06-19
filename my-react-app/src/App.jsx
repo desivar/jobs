@@ -25,9 +25,13 @@ const App = () => {
   const [errorPipelines, setErrorPipelines] = useState(null);
 
   // Base URL for your backend API.
-  // This has been hardcoded to http://localhost:5500/api to resolve the compilation warning
-  // and ensure the frontend correctly targets your backend's port.
+  // IMPORTANT: This is now hardcoded to http://localhost:5500/api.
+  // Your Node.js backend MUST be running on port 5500 for this to work.
   const API_BASE_URL = 'http://localhost:5500/api'; 
+
+  // --- Debugging Log: Check isLoggedIn state on every render ---
+  // Open your browser's developer console (F12) to see these logs.
+  console.log('App component rendered. Current isLoggedIn state:', isLoggedIn);
 
   // Mock login function
   const handleLogin = (e) => {
@@ -35,10 +39,11 @@ const App = () => {
     if (username.trim()) {
       setIsLoggedIn(true);
       console.log(`User '${username}' logged in (mock).`);
+      // --- Debugging Log: Confirm state change immediately after setting ---
+      console.log('isLoggedIn set to TRUE. Next render should show dashboard.'); 
     } else {
-      // Replaced alert with a simple console log for a non-blocking message.
-      // For a proper UI, you'd use a custom modal/toast.
-      console.log('Please enter a username to log in.'); 
+      console.log('Login failed: Please enter a username.'); 
+      // For a proper UI, you'd show an error message in the app, not just console.log.
     }
   };
 
@@ -46,7 +51,7 @@ const App = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername('');
-    // Clear fetched data on logout
+    // Clear fetched data on logout to reset the view
     setUsers([]);
     setCustomers([]);
     setJobs([]);
@@ -61,14 +66,14 @@ const App = () => {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`);
       if (!response.ok) {
-        // More specific error message for HTTP errors
+        // Provide more detailed error if backend sends non-200 status
         throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText || 'Unknown Error'}`);
       }
       const data = await response.json();
       setData(data);
     } catch (error) {
       console.error(`Error fetching data from ${endpoint}:`, error);
-      setError(`Failed to load data from ${endpoint}: ${error.message}. Ensure your backend is running on ${API_BASE_URL.split('/api')[0]}.`);
+      setError(`Failed to load data from ${endpoint}: ${error.message}. Ensure your backend is running and accessible at ${API_BASE_URL.split('/api')[0]}.`);
     } finally {
       setLoading(false);
     }
@@ -76,13 +81,16 @@ const App = () => {
 
   // Effect to fetch data when the user logs in
   useEffect(() => {
+    // --- Debugging Log: Check isLoggedIn inside useEffect ---
+    console.log('useEffect triggered. isLoggedIn:', isLoggedIn);
     if (isLoggedIn) {
+      console.log('isLoggedIn is TRUE, attempting to fetch dashboard data...');
       fetchData('/users', setUsers, setLoadingUsers, setErrorUsers);
       fetchData('/customers', setCustomers, setLoadingCustomers, setErrorCustomers);
       fetchData('/jobs', setJobs, setLoadingJobs, setErrorJobs);
       fetchData('/pipelines', setPipelines, setLoadingPipelines, setErrorPipelines);
     }
-  }, [isLoggedIn]); // API_BASE_URL is now a constant, so no need to include in dependency array.
+  }, [isLoggedIn]); // This effect runs only when isLoggedIn state changes
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-8 font-inter text-gray-800">
@@ -102,6 +110,7 @@ const App = () => {
       {/* Login/User Display Section */}
       <section className="bg-white p-8 rounded-2xl shadow-xl mb-10 max-w-2xl mx-auto border border-gray-200">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">User Management</h2>
+        {/* Conditional rendering: show welcome/logout if logged in, else show login form */}
         {isLoggedIn ? (
           <div className="flex flex-col items-center">
             <p className="text-xl mb-4 text-green-600">
@@ -133,8 +142,8 @@ const App = () => {
         )}
       </section>
 
-      {/* Data Display Sections */}
-      {isLoggedIn && (
+      {/* Data Display Sections - ONLY RENDERED IF isLoggedIn IS TRUE */}
+      {isLoggedIn && ( // This condition controls whether the entire dashboard content is visible
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
           {/* Users Section */}
           <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
