@@ -24,9 +24,10 @@ const App = () => {
   const [errorJobs, setErrorJobs] = useState(null);
   const [errorPipelines, setErrorPipelines] = useState(null);
 
-  // Base URL for your backend API
-  // Ensure your Node.js backend is running on this port (e.g., 3000)
-  const API_BASE_URL = 'http://localhost:3000/api'; 
+  // Base URL for your backend API.
+  // This has been hardcoded to http://localhost:5500/api to resolve the compilation warning
+  // and ensure the frontend correctly targets your backend's port.
+  const API_BASE_URL = 'http://localhost:5500/api'; 
 
   // Mock login function
   const handleLogin = (e) => {
@@ -35,7 +36,9 @@ const App = () => {
       setIsLoggedIn(true);
       console.log(`User '${username}' logged in (mock).`);
     } else {
-      alert('Please enter a username to log in.'); // Using alert for simplicity, consider a custom modal
+      // Replaced alert with a simple console log for a non-blocking message.
+      // For a proper UI, you'd use a custom modal/toast.
+      console.log('Please enter a username to log in.'); 
     }
   };
 
@@ -58,13 +61,14 @@ const App = () => {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // More specific error message for HTTP errors
+        throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText || 'Unknown Error'}`);
       }
       const data = await response.json();
       setData(data);
     } catch (error) {
       console.error(`Error fetching data from ${endpoint}:`, error);
-      setError(`Failed to load data from ${endpoint}: ${error.message}`);
+      setError(`Failed to load data from ${endpoint}: ${error.message}. Ensure your backend is running on ${API_BASE_URL.split('/api')[0]}.`);
     } finally {
       setLoading(false);
     }
@@ -78,7 +82,7 @@ const App = () => {
       fetchData('/jobs', setJobs, setLoadingJobs, setErrorJobs);
       fetchData('/pipelines', setPipelines, setLoadingPipelines, setErrorPipelines);
     }
-  }, [isLoggedIn]); // Dependency array: re-run when isLoggedIn changes
+  }, [isLoggedIn]); // API_BASE_URL is now a constant, so no need to include in dependency array.
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-8 font-inter text-gray-800">
