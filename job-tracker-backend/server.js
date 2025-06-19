@@ -6,19 +6,19 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Use process.env.PORT if available, otherwise default to 3000
+const PORT = process.env.PORT || 5500; // Default to 5500 as discussed, or use process.env.PORT
 
 // Middleware
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Enable JSON body parsing
 
 // MongoDB Connection
-// Now using the MONGODB_URI from the .env file
-const MONGODB_URI = process.env.MONGODB_URI; 
+// IMPORTANT: Updated to the new URI you provided.
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://jilliandesire:bueno1967@cluster0.0xhod.mongodb.net/?retryWrites=true&w=majority'; 
 
-// Check if MONGODB_URI is loaded
+// Check if MONGODB_URI is loaded (useful if not using .env)
 if (!MONGODB_URI) {
-  console.error('Error: MONGODB_URI is not defined. Please check your .env file.');
+  console.error('Error: MONGODB_URI is not defined. Please check your .env file or server.js.');
   process.exit(1); // Exit if URI is missing
 }
 
@@ -107,3 +107,4 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
