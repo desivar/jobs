@@ -1,30 +1,36 @@
+// Load environment variables from .env file
+require('dotenv').config(); 
+
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors'); // Import cors
+const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // Use process.env.PORT if available, otherwise default to 3000
 
 // Middleware
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Enable JSON body parsing
 
 // MongoDB Connection
-// IMPORTANT: Make sure this URI is correct for your MongoDB Atlas cluster.
-// Replace 'jaden' and 'admin' with your actual username and password if different.
-const MONGODB_URI = 'mongodb+srv://jaden:admin@cluster0.abrvs.mongodb.net/job-tracker/?retryWrites=true&w=majority';
+// Now using the MONGODB_URI from the .env file
+const MONGODB_URI = process.env.MONGODB_URI; 
+
+// Check if MONGODB_URI is loaded
+if (!MONGODB_URI) {
+  console.error('Error: MONGODB_URI is not defined. Please check your .env file.');
+  process.exit(1); // Exit if URI is missing
+}
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB successfully!'))
   .catch((error) => {
     console.error('MongoDB connection error:', error);
-    // Exit process if MongoDB connection fails to prevent server from running without a database
+    // Exit process if MongoDB connection fails
     process.exit(1); 
   });
 
 // Simple Mongoose Schemas (adjust fields as needed based on your data structure)
-// Using strict: false means Mongoose will allow any fields to be saved, 
-// which is useful if your documents have varied structures.
 const userSchema = new mongoose.Schema({}, { strict: false, collection: 'users' });
 const customerSchema = new mongoose.Schema({}, { strict: false, collection: 'customers' });
 const jobSchema = new mongoose.Schema({}, { strict: false, collection: 'jobs' });
